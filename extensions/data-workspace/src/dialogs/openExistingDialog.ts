@@ -76,20 +76,27 @@ export class OpenExistingDialog extends DialogBase {
 
 				await this.workspaceService.enterWorkspace(vscode.Uri.file(this._filePathTextBox!.value!));
 			} else {
-				const t = TelemetryReporter.createActionEvent(TelemetryViews.OpenExistingDialog, 'OpeningProject');
-
 				// save datapoint now because it'll get set to new value during validateWorkspace()
-				t.withAdditionalProperties({ hasWorkspaceOpen: (vscode.workspace.workspaceFile !== undefined).toString() });
+				const telemetryProps: any = { hasWorkspaceOpen: (vscode.workspace.workspaceFile !== undefined).toString() };
 
 				const validateWorkspace = await this.workspaceService.validateWorkspace();
+				let addProjectsPromise: Promise<void>;
 
 				if (validateWorkspace) {
-					t.withAdditionalProperties({ workspaceProjectRelativity: CalculateRelativity(this._filePathTextBox!.value!, this.workspaceInputBox!.value!), cancelled: 'false' }).send();
-					await this.workspaceService.addProjectsToWorkspace([vscode.Uri.file(this._filePathTextBox!.value!)], vscode.Uri.file(this.workspaceInputBox!.value!));
+					telemetryProps.workspaceProjectRelativity = CalculateRelativity(this._filePathTextBox!.value!, this.workspaceInputBox!.value!);
+					telemetryProps.cancelled = 'false';
+					addProjectsPromise = this.workspaceService.addProjectsToWorkspace([vscode.Uri.file(this._filePathTextBox!.value!)], vscode.Uri.file(this.workspaceInputBox!.value!));
 				} else {
-					t.withAdditionalProperties({ workspaceProjectRelativity: 'none', cancelled: 'true' }).send();
-					await this.workspaceService.addProjectsToWorkspace([vscode.Uri.file(this._filePathTextBox!.value!)], vscode.Uri.file(this.workspaceInputBox!.value!));
+					telemetryProps.workspaceProjectRelativity = 'none';
+					telemetryProps.cancelled = 'true';
+					addProjectsPromise = this.workspaceService.addProjectsToWorkspace([vscode.Uri.file(this._filePathTextBox!.value!)], vscode.Uri.file(this.workspaceInputBox!.value!));
 				}
+
+				TelemetryReporter.createActionEvent(TelemetryViews.OpenExistingDialog, 'OpeningProject')
+					.withAdditionalProperties(telemetryProps)
+					.send();
+
+				await addProjectsPromise;
 			}
 		}
 		catch (err) {

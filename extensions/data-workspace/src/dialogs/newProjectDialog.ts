@@ -28,9 +28,9 @@ export class NewProjectDialog extends DialogBase {
 		super(constants.NewProjectDialogTitle, 'NewProject');
 
 		// dialog launched from Welcome message button (only visible when no current workspace) vs. "add project" button
-		const t = TelemetryReporter.createActionEvent(TelemetryViews.NewProjectDialog, 'NewProjectDialogLaunched');
-		t.withAdditionalProperties({ isWorkspaceOpen: (vscode.workspace.workspaceFile !== undefined).toString() });
-		t.send();
+		TelemetryReporter.createActionEvent(TelemetryViews.NewProjectDialog, 'NewProjectDialogLaunched')
+			.withAdditionalProperties({ isWorkspaceOpen: (vscode.workspace.workspaceFile !== undefined).toString() })
+			.send();
 	}
 
 	async validate(): Promise<boolean> {
