@@ -153,6 +153,7 @@
     ]
   },
   "dependencies": {
+    "@opentelemetry/tracing": "^0.14.0",
     "ads-extension-telemetry": "^1.0.0",
     "vscode-nls": "^4.0.0"
   },
